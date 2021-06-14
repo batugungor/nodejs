@@ -12,24 +12,30 @@ exports.create = (req, res) => {
         return;
     }
 
-    // Create a Tutorial
-    const tutorial = {
-        title: req.body.title,
-        description: req.body.description,
-        published: req.body.published ? req.body.published : false
-    };
+    Tutorial.findOne({
+        order: [['createdAt', 'DESC']],
+    }).then(data => {
+        // Create a Tutorial
+        const tutorial = {
+            title: req.body.title,
+            description: req.body.description,
+            published: req.body.published ? req.body.published : false,
+            order: data ? data.order + 1 : 1
+        };
 
-    // Save Tutorial in the database
-    Tutorial.create(tutorial)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the Tutorial."
+        // Save Tutorial in the database
+        Tutorial.create(tutorial)
+            .then(data => {
+                res.send(data);
+            })
+            .catch(err => {
+                res.status(500).send({
+                    message:
+                        err.message || "Some error occurred while creating the Tutorial."
+                });
             });
-        });
+        res.send(data);
+    });
 };
 
 // Retrieve all Tutorials from the database.
@@ -144,3 +150,17 @@ exports.findAllPublished = (req, res) => {
             });
         });
 };
+
+exports.findWithOrder = (req, res) => {
+    Tutorial.findAll({
+        order: [["order", "ASC"]]
+    }).then(data => {
+        res.send(data);
+    })
+        .catch(err => {
+            res.status(500).send({
+                message:
+                    err.message || "Some error occurred while retrieving tutorials."
+            });
+        });
+}
